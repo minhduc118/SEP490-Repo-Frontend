@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "tsx watch server/index.ts",
+    "dev:all": "npm-run-all --parallel dev server",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
@@ -12,20 +14,31 @@
   "dependencies": {
     "@ant-design/icons": "^6.3.4",
     "@tanstack/react-query": "^5.102.8",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "antd": "^6.6.4",
     "axios": "^1.20.0",
+    "cors": "^2.8.6",
     "dayjs": "^1.11.23",
+    "express": "^5.2.1",
+    "gray-matter": "^4.0.3",
+    "nodemon": "^3.1.14",
+    "npm-run-all2": "^8.0.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3",
+    "tsx": "^4.23.15",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.20",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.4",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
+    "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
   }

@@ -1,13 +1,13 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { Layout, Menu, Typography } from 'antd'
-import { DashboardOutlined, ShoppingOutlined } from '@ant-design/icons'
+import { DashboardOutlined, ShoppingOutlined, ThunderboltOutlined } from '@ant-design/icons'
 
 const { Header, Sider, Content } = Layout
 
 const AppLayout = () => (
-  <Layout style={{ minHeight: '100vh' }}>
+  <Layout className="min-h-screen">
     <Sider breakpoint="lg" collapsedWidth={64}>
-      <div style={{ color: '#fff', padding: 16, fontWeight: 700 }}>SGMS</div>
+      <div className="p-4 font-bold text-white">SGMS</div>
       <Menu
         theme="dark"
         mode="inline"
@@ -15,14 +15,15 @@ const AppLayout = () => (
         items={[
           { key: 'dashboard', icon: <DashboardOutlined />, label: <NavLink to="/dashboard">Dashboard</NavLink> },
           { key: 'products', icon: <ShoppingOutlined />, label: <NavLink to="/products">San pham</NavLink> },
+          { key: 'teamspec', icon: <ThunderboltOutlined />, label: <NavLink to="/teamspec">TeamSpec Monitor</NavLink> },
         ]}
       />
     </Sider>
     <Layout>
-      <Header style={{ background: '#fff', padding: '0 24px' }}>
+      <Header className="!bg-white !px-6">
         <Typography.Text strong>Smart Grocery Management</Typography.Text>
       </Header>
-      <Content style={{ margin: 24 }}>
+      <Content className="m-6">
         <Outlet />
       </Content>
     </Layout>

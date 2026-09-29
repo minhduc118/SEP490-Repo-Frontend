@@ -1,8 +1,8 @@
 import { Button, Card, Form, Input, Typography } from 'antd'
 
 const LoginPage = () => (
-  <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#f5f5f5' }}>
-    <Card style={{ width: 360 }}>
+  <div className="grid min-h-screen place-items-center bg-neutral-100">
+    <Card className="w-[360px]">
       <Typography.Title level={3}>SGMS Login</Typography.Title>
       <Form layout="vertical">
         <Form.Item label="Email" name="email" rules={[{ required: true }]}>
