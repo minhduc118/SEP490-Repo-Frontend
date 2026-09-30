@@ -1,12 +1,14 @@
 /**
  * GET /api/changes                      — list tất cả changes với compliance
  * GET /api/changes/:name                — chi tiết 1 change + preview artifacts
+ * GET /api/changes/:name/activity      — timeline (git commits + approvals + improvements)
  * GET /api/changes/:name/artifact?file= — full content 1 artifact
  */
 import { Router } from 'express';
 import { kbSource } from '../lib/kb-source.js';
 import { buildChange, loadAllChanges, safeChangePath } from '../lib/changes.js';
 import { sendError } from '../lib/http.js';
+import { buildActivity } from '../../src/features/teamspec/lib/activity.ts';
 
 export const changesRouter = Router();
 
@@ -36,6 +38,25 @@ changesRouter.get('/:name', async (req, res) => {
       return res.status(404).json({ error: `Change "${req.params.name}" not found` });
     }
     res.json(await buildChange(req.params.name, { detail: true }));
+  } catch (error) {
+    sendError(res, error);
+  }
+});
+
+changesRouter.get('/:name/activity', async (req, res) => {
+  try {
+    const base = safeChangePath(req.params.name);
+    if (!base) return res.status(400).json({ error: 'Invalid change name' });
+    if (!(await kbSource.exists(base))) {
+      return res.status(404).json({ error: `Change "${req.params.name}" not found` });
+    }
+    const [commits, session, summary, improvements] = await Promise.all([
+      kbSource.history(base, 100).catch(() => []),
+      kbSource.read(`${base}/.session.md`),
+      kbSource.read(`${base}/summary.md`),
+      kbSource.read(`${base}/improvements.md`),
+    ]);
+    res.json({ items: buildActivity({ commits, session, summary, improvements }), source: commits.length ? 'git' : 'session' });
   } catch (error) {
     sendError(res, error);
   }

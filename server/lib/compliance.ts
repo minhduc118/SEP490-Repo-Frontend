@@ -3,10 +3,15 @@
  */
 export {
   ALL_ARTIFACTS,
+  EXTRA_ARTIFACTS,
   WORKFLOW_STAGES,
   calculateCompliance,
+  normalizeApprovals,
+  normalizeRejections,
+  normalizeSchema,
   normalizeStage,
-  parseTaskProgress,
+  parseRequirements,
+  parseTasks,
   parseTestVerdict,
 } from '../../src/features/teamspec/lib/compliance.ts';
 
@@ -16,5 +21,6 @@ export type {
   ComplianceResult,
   OpenSpecChange,
   StageResult,
+  TaskItem,
   Violation,
 } from '../../src/features/teamspec/types/index.ts';

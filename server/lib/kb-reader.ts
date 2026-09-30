@@ -54,6 +54,11 @@ export function listDirLocal(relativePath: string): string[] {
 export interface Frontmatter {
   assignee?: string;
   mode?: 'full' | 'fast' | 'minimal';
+  schema?: string;
+  capability?: string;
+  gate?: boolean;
+  approvals?: unknown;
+  rejections?: unknown;
   stage?: string;
   project?: string;
   started_at?: string;
@@ -81,8 +86,22 @@ export interface GitFileInfo {
   message: string;
 }
 
+let gitWorkTree: boolean | undefined;
+
+/** The KB may be a subfolder of a larger repo (ai-team-kit), so look for any enclosing work tree */
+function isGitWorkTree(): boolean {
+  if (gitWorkTree === undefined) {
+    try {
+      gitWorkTree = execSync('git rev-parse --is-inside-work-tree', { cwd: KB_PATH, encoding: 'utf-8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore'] }).trim() === 'true';
+    } catch {
+      gitWorkTree = false;
+    }
+  }
+  return gitWorkTree;
+}
+
 export function getFileGitInfo(relativePath: string): GitFileInfo | null {
-  if (!fs.existsSync(KB_PATH + '/.git')) return null;
+  if (!isGitWorkTree()) return null;
   try {
     const output = execSync(
       `git log -1 --format="%an|%ae|%aI|%s" -- "${relativePath}"`,
@@ -96,8 +115,28 @@ export function getFileGitInfo(relativePath: string): GitFileInfo | null {
   }
 }
 
+/** Newest-first commits touching a file or folder */
+export function getGitHistory(relativePath: string, limit = 50): GitFileInfo[] {
+  if (!isGitWorkTree()) return [];
+  try {
+    const output = execSync(
+      `git log -n ${Math.max(1, Math.min(limit, 200))} --format="%an%x1f%ae%x1f%aI%x1f%s" -- "${relativePath}"`,
+      { cwd: KB_PATH, encoding: 'utf-8', timeout: 5000 },
+    ).trim();
+    return output
+      .split('\n')
+      .filter(Boolean)
+      .map(line => {
+        const [author, email, date, message] = line.replace(/^"|"$/g, '').split('\x1f');
+        return { author, email, date, message };
+      });
+  } catch {
+    return [];
+  }
+}
+
 export function getChangeAuthors(changeName: string): string[] {
-  if (!fs.existsSync(KB_PATH + '/.git')) return [];
+  if (!isGitWorkTree()) return [];
   try {
     const output = execSync(
       `git log --format="%an" -- "openspec/changes/${changeName}/"`,

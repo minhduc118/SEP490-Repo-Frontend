@@ -28,11 +28,15 @@ export const authRouter = Router();
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:3000').replace(/\/$/, '');
 const APP_HOME = `${APP_URL}/teamspec`;
 const CALLBACK_URL = `${APP_URL}/api/auth/github/callback`;
+// Team passwords live in source code — only acceptable for local demos
+const PASSWORD_LOGIN = process.env.PASSWORD_LOGIN
+  ? process.env.PASSWORD_LOGIN === 'true'
+  : process.env.NODE_ENV !== 'production';
 
 authRouter.get('/config', (_req, res) => {
   res.json({
     github: isGithubOAuthEnabled(),
-    password: true,
+    password: PASSWORD_LOGIN,
     repo: isGithubRepoConfigured() ? repoSlug() : null,
     source: kbSource.mode,
   });
@@ -81,6 +85,7 @@ authRouter.get('/github/callback', async (req, res) => {
 });
 
 authRouter.post('/login', (req, res) => {
+  if (!PASSWORD_LOGIN) return res.status(403).json({ error: 'Password login is disabled — sign in with GitHub' });
   const { login, password } = (req.body ?? {}) as { login?: unknown; password?: unknown };
 
   if (typeof login !== 'string' || typeof password !== 'string' || !login.trim() || !password) {

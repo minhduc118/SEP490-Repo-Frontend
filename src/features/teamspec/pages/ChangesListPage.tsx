@@ -5,6 +5,7 @@ import {
   AssigneeCell, BlockedDot, ComplianceCell, FilterCount, MyChangesToggle, ScoreOptions,
   StageBadge, StageOptions, ViolationBadges,
 } from '../components/SharedComponents';
+import { CoverageBadge, NextActionHint, TaskProgressCell } from '../components/TaskComponents';
 import { Button, Card, EmptyState, PageHeader, SearchInput, Select } from '../components/ui';
 import { TONE_TEXT, cn, isBlocked, matchesScoreFilter, table, type Tone } from '../lib/styles';
 import { useChanges } from '../lib/api';
@@ -21,13 +22,16 @@ type SortDir = 'asc' | 'desc';
 
 // ─── Export CSV ───────────────────────────────────────────────────────────────
 function exportCSV(changes: ChangeWithCompliance[]) {
-  const header = ['Name', 'Assignee', 'Stage', 'Mode', 'Score', 'Violations', 'Started At'];
+  const header = ['Name', 'Assignee', 'Stage', 'Schema', 'Mode', 'Score', 'Tasks Done', 'Tasks Total', 'Violations', 'Started At'];
   const rows = changes.map(c => [
     c.name,
     c.assignee || 'unassigned',
     c.stage,
+    c.schema ?? 'feature',
     c.mode,
     `${c.compliance.score}%`,
+    c.tasks?.done ?? '',
+    c.tasks?.total ?? '',
     c.compliance.violations.length,
     c.startedAt ? new Date(c.startedAt).toLocaleDateString('vi-VN') : '',
   ]);
@@ -49,7 +53,7 @@ function SortableTh({
     <th className={cn(table.th, table.thSortable)} onClick={() => onSort(sortKey)}>
       <span className="inline-flex items-center gap-1">
         {label}
-        <span className={active ? 'text-indigo-300' : 'text-zinc-600'}>{active ? (dir === 'asc' ? '↑' : '↓') : '⇅'}</span>
+        <span className={active ? 'text-indigo-700' : 'text-zinc-400'}>{active ? (dir === 'asc' ? '↑' : '↓') : '⇅'}</span>
       </span>
     </th>
   );
@@ -131,7 +135,7 @@ export function ChangesListPage({ onSelectChange, useApi = false }: Props) {
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {summary.map(stat => (
-          <div key={stat.label} className="rounded-xl border border-white/[0.07] bg-zinc-900/60 px-4 py-3">
+          <div key={stat.label} className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
             <div className={cn('text-2xl font-bold tabular-nums', TONE_TEXT[stat.tone])}>{stat.value}</div>
             <div className="text-[11px] text-zinc-500">{stat.label}</div>
           </div>
@@ -164,7 +168,9 @@ export function ChangesListPage({ onSelectChange, useApi = false }: Props) {
                   <SortableTh label="Bước" sortKey="stage" {...sortProps} />
                   <SortableTh label="Assignee" sortKey="assignee" {...sortProps} />
                   <SortableTh label="Compliance" sortKey="score" {...sortProps} />
+                  <th className={table.th}>Tasks</th>
                   <th className={table.th}>Violations</th>
+                  <th className={table.th}>Việc tiếp theo</th>
                   <SortableTh label="Started" sortKey="startedAt" {...sortProps} />
                 </tr>
               </thead>
@@ -177,15 +183,22 @@ export function ChangesListPage({ onSelectChange, useApi = false }: Props) {
                         <div className="flex items-center gap-2.5">
                           {blocked && <BlockedDot />}
                           <div>
-                            <div className="font-semibold text-zinc-100">{c.name}</div>
-                            <div className="mt-0.5 text-[11px] text-zinc-500">{c.project} · {c.mode} mode</div>
+                            <div className="font-semibold text-zinc-900">{c.name}</div>
+                            <div className="mt-0.5 text-[11px] text-zinc-500">{c.project} · {c.schema ?? 'feature'} · {c.mode} mode</div>
                           </div>
                         </div>
                       </td>
                       <td className={table.td}><StageBadge stage={c.stage} /></td>
                       <td className={table.td}><AssigneeCell login={c.assignee} /></td>
                       <td className={table.td}><ComplianceCell compliance={c.compliance} /></td>
+                      <td className={table.td}>
+                        <div className="flex items-center gap-2">
+                          <TaskProgressCell tasks={c.tasks} />
+                          <CoverageBadge change={c} />
+                        </div>
+                      </td>
                       <td className={table.td}><ViolationBadges compliance={c.compliance} /></td>
+                      <td className={table.td}><NextActionHint action={c.compliance.nextAction} changeName={c.name} compact /></td>
                       <td className={cn(table.td, 'whitespace-nowrap text-xs text-zinc-500')}>
                         {c.startedAt ? new Date(c.startedAt).toLocaleDateString('vi-VN') : '—'}
                       </td>

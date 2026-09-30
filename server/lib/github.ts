@@ -9,6 +9,8 @@ export const GITHUB_CONFIG = {
   owner: process.env.GITHUB_OWNER ?? '',
   repo: process.env.GITHUB_REPO ?? '',
   branch: process.env.GITHUB_BRANCH ?? 'main',
+  /** Folder of the KB inside the repo, e.g. "team-ai-knowledge" for minhduc118/ai-team-kit */
+  kbDir: (process.env.GITHUB_KB_DIR ?? '').replace(/\\/g, '/').replace(/^\/+|\/+$/g, ''),
   serviceToken: process.env.GITHUB_TOKEN ?? '',
   allowedUsers: (process.env.GITHUB_ALLOWED_USERS ?? '')
     .split(',').map(s => s.trim().toLowerCase()).filter(Boolean),

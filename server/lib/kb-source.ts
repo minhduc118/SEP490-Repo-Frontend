@@ -4,7 +4,7 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { KB_PATH, getFileGitInfo, readFileLocal, type GitFileInfo } from './kb-reader.js';
+import { KB_PATH, getFileGitInfo, getGitHistory, readFileLocal, type GitFileInfo } from './kb-reader.js';
 import { GITHUB_CONFIG, githubApi, isGithubRepoConfigured, repoSlug } from './github.js';
 import { getRequestContext } from './request-context.js';
 
@@ -23,6 +23,8 @@ export interface KBSource {
   lastCommit(rel: string): Promise<GitFileInfo | null>;
   /** Cheap modification time (local only) */
   mtime(rel: string): Promise<string | undefined>;
+  /** Newest-first commits touching a file or folder */
+  history(rel: string, limit?: number): Promise<GitFileInfo[]>;
 }
 
 // ── Local ─────────────────────────────────────────────────────────────────────
@@ -51,6 +53,9 @@ const localSource: KBSource = {
       return undefined;
     }
   },
+  async history(rel, limit) {
+    return getGitHistory(rel, limit);
+  },
 };
 
 // ── GitHub ────────────────────────────────────────────────────────────────────
@@ -61,6 +66,21 @@ let treeCache: { at: number; entries: Map<string, TreeEntry> } | null = null;
 let treeRequest: Promise<Map<string, TreeEntry>> | null = null;
 const blobCache = new Map<string, string>();
 const commitCache = new Map<string, { at: number; info: GitFileInfo | null }>();
+const historyCache = new Map<string, { at: number; items: GitFileInfo[] }>();
+
+interface GithubCommit {
+  author: { login: string } | null;
+  commit: { author: { name: string; email: string; date: string }; message: string };
+}
+
+function toInfo(c: GithubCommit): GitFileInfo {
+  return {
+    author: c.author?.login ?? c.commit.author.name,
+    email: c.commit.author.email,
+    date: c.commit.author.date,
+    message: c.commit.message.split('\n')[0],
+  };
+}
 
 function token(): string | undefined {
   return getRequestContext().githubToken || GITHUB_CONFIG.serviceToken || undefined;
@@ -90,11 +110,16 @@ async function loadTree(): Promise<Map<string, TreeEntry>> {
   return treeRequest;
 }
 
+/** KB-relative path → repo path */
+function repoPath(rel: string): string {
+  return GITHUB_CONFIG.kbDir ? `${GITHUB_CONFIG.kbDir}/${rel}` : rel;
+}
+
 const githubSource: KBSource = {
   mode: 'github',
-  label: `github · ${repoSlug()}@${GITHUB_CONFIG.branch}`,
+  label: `github · ${repoSlug()}@${GITHUB_CONFIG.branch}${GITHUB_CONFIG.kbDir ? `/${GITHUB_CONFIG.kbDir}` : ''}`,
   async listDir(rel) {
-    const prefix = rel.replace(/\/$/, '') + '/';
+    const prefix = repoPath(rel).replace(/\/$/, '') + '/';
     const tree = await loadTree();
     const out: DirEntry[] = [];
     for (const [p, entry] of tree) {
@@ -105,10 +130,10 @@ const githubSource: KBSource = {
     return out;
   },
   async exists(rel) {
-    return (await loadTree()).has(rel);
+    return (await loadTree()).has(repoPath(rel));
   },
   async read(rel) {
-    const entry = (await loadTree()).get(rel);
+    const entry = (await loadTree()).get(repoPath(rel));
     if (!entry || entry.type !== 'blob') return null;
     const cached = blobCache.get(entry.sha);
     if (cached !== undefined) return cached;
@@ -123,25 +148,24 @@ const githubSource: KBSource = {
   async lastCommit(rel) {
     const hit = commitCache.get(rel);
     if (hit && Date.now() - hit.at < TREE_TTL_MS) return hit.info;
-    const params = new URLSearchParams({ path: rel, sha: GITHUB_CONFIG.branch, per_page: '1' });
-    const commits = await githubApi<Array<{
-      author: { login: string } | null;
-      commit: { author: { name: string; email: string; date: string }; message: string };
-    }>>(`/repos/${repoSlug()}/commits?${params}`, token());
-    const c = commits[0];
-    const info: GitFileInfo | null = c
-      ? {
-          author: c.author?.login ?? c.commit.author.name,
-          email: c.commit.author.email,
-          date: c.commit.author.date,
-          message: c.commit.message.split('\n')[0],
-        }
-      : null;
+    const params = new URLSearchParams({ path: repoPath(rel), sha: GITHUB_CONFIG.branch, per_page: '1' });
+    const commits = await githubApi<GithubCommit[]>(`/repos/${repoSlug()}/commits?${params}`, token());
+    const info: GitFileInfo | null = commits[0] ? toInfo(commits[0]) : null;
     commitCache.set(rel, { at: Date.now(), info });
     return info;
   },
   async mtime() {
     return undefined;
+  },
+  async history(rel, limit = 50) {
+    const key = `history:${rel}:${limit}`;
+    const hit = historyCache.get(key);
+    if (hit && Date.now() - hit.at < TREE_TTL_MS) return hit.items;
+    const params = new URLSearchParams({ path: repoPath(rel), sha: GITHUB_CONFIG.branch, per_page: String(Math.min(limit, 100)) });
+    const commits = await githubApi<GithubCommit[]>(`/repos/${repoSlug()}/commits?${params}`, token());
+    const items = commits.map(toInfo);
+    historyCache.set(key, { at: Date.now(), items });
+    return items;
   },
 };
 

@@ -8,8 +8,13 @@
     "server": "tsx watch server/index.ts",
     "dev:all": "npm-run-all --parallel dev server",
     "build": "tsc -b && vite build",
+    "start": "node --import tsx server/index.ts",
+    "test": "tsx --test tests/compliance.test.ts",
     "lint": "oxlint",
     "preview": "vite preview"
+  },
+  "engines": {
+    "node": ">=22.12"
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.4",

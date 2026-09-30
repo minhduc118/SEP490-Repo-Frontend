@@ -1,0 +1,44 @@
+# Render Blueprint — TeamSpec Monitor (UI + API in one Node service, no database)
+# Render dashboard → New → Blueprint → chọn repo này. Điền các biến sync:false khi được hỏi.
+services:
+  - type: web
+    name: teamspec
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: APP_URL
+        sync: false # https://teamspec-xxxx.onrender.com
+      - key: KB_SOURCE
+        value: github
+      - key: GITHUB_OWNER
+        value: minhduc118
+      - key: GITHUB_REPO
+        value: ai-team-kit
+      - key: GITHUB_BRANCH
+        value: main
+      - key: GITHUB_KB_DIR
+        value: team-ai-knowledge
+      - key: GITHUB_TOKEN
+        sync: false # fine-grained token, repo ai-team-kit, Contents: Read-only
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_OAUTH_SCOPE
+        value: read:user repo
+      - key: GITHUB_ALLOWED_USERS
+        sync: false # tài khoản mentor không phải collaborator, cách nhau dấu phẩy
+      - key: TEAMSPEC_ONLY
+        value: "true"

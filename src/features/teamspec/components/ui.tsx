@@ -25,7 +25,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return (
     <section
       className={cn(
-        'rounded-2xl border border-white/[0.07] bg-zinc-900/60 p-5 shadow-lg shadow-black/20 backdrop-blur-sm',
+        'rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm shadow-zinc-200/70',
         className,
       )}
     >
@@ -37,7 +37,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
 export function CardTitle({ children, extra }: { children: ReactNode; extra?: ReactNode }) {
   return (
     <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-100">{children}</h2>
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-900">{children}</h2>
       {extra && <div className="text-xs text-zinc-500">{extra}</div>}
     </div>
   );
@@ -50,8 +50,8 @@ export function PageHeader({
   return (
     <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight text-white">{title}</h1>
-        {subtitle && <p className="mt-1.5 text-sm text-zinc-400">{subtitle}</p>}
+        <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight text-zinc-900">{title}</h1>
+        {subtitle && <p className="mt-1.5 text-sm text-zinc-600">{subtitle}</p>}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </header>
@@ -64,9 +64,9 @@ type ButtonVariant = 'primary' | 'outline' | 'ghost' | 'link';
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
     'h-9 px-4 rounded-lg bg-indigo-500 text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-400 disabled:bg-indigo-500/50',
-  outline: 'h-9 px-3.5 rounded-lg border border-white/10 bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08]',
-  ghost: 'h-9 px-3 rounded-lg text-zinc-400 hover:bg-white/5 hover:text-zinc-100',
-  link: 'text-indigo-300 hover:text-indigo-200 hover:underline underline-offset-2',
+  outline: 'h-9 px-3.5 rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-800 hover:bg-zinc-100',
+  ghost: 'h-9 px-3 rounded-lg text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
+  link: 'text-indigo-700 hover:text-indigo-700 hover:underline underline-offset-2',
 };
 
 export function Button({
@@ -110,7 +110,7 @@ export function SearchInput({
           type="button"
           onClick={() => onChange('')}
           title="Xóa"
-          className="absolute right-2 top-1/2 grid size-5 -translate-y-1/2 cursor-pointer place-items-center rounded text-zinc-500 hover:bg-white/10 hover:text-zinc-200"
+          className="absolute right-2 top-1/2 grid size-5 -translate-y-1/2 cursor-pointer place-items-center rounded text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800"
         >
           ✕
         </button>
@@ -126,7 +126,7 @@ export function Select({
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className={cn(FIELD, 'cursor-pointer px-3 pr-8 [&>option]:bg-zinc-900', className)}
+      className={cn(FIELD, 'cursor-pointer px-3 pr-8 [&>option]:bg-white', className)}
     >
       {children}
     </select>
@@ -139,8 +139,8 @@ export function EmptyState({
 }: { icon: ReactNode; title?: string; sub?: string; children?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
-      <div className="mb-3 grid size-12 place-items-center rounded-2xl bg-white/5 text-2xl">{icon}</div>
-      {title && <div className="text-sm font-semibold text-zinc-200">{title}</div>}
+      <div className="mb-3 grid size-12 place-items-center rounded-2xl bg-zinc-100 text-2xl">{icon}</div>
+      {title && <div className="text-sm font-semibold text-zinc-800">{title}</div>}
       {sub && <div className="mt-1 text-xs text-zinc-500">{sub}</div>}
       {children && <div className="mt-4">{children}</div>}
     </div>
@@ -159,14 +159,14 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex animate-fade-in items-center justify-center bg-black/70 p-4 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-[1000] flex animate-fade-in items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm sm:p-6"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          'flex max-h-[85vh] w-full animate-pop-in flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl shadow-black/60',
+          'flex max-h-[85vh] w-full animate-pop-in flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-zinc-900/10',
           className,
         )}
       >
@@ -182,7 +182,7 @@ export function CloseButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       title="Đóng (Esc)"
-      className="grid size-8 cursor-pointer place-items-center rounded-lg text-lg text-zinc-500 transition-colors hover:bg-white/10 hover:text-zinc-100"
+      className="grid size-8 cursor-pointer place-items-center rounded-lg text-lg text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-900"
     >
       ×
     </button>

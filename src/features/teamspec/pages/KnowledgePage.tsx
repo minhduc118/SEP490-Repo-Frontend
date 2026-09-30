@@ -110,11 +110,11 @@ const MOCK_KB_DOCS: KBDocument[] = [
 ];
 
 const TYPE_CONFIG: Record<KBDocument['type'], { icon: string; label: string; badge: string; accent: string }> = {
-  guide:    { icon: '📘', label: 'Guide',    badge: 'bg-sky-500/10 text-sky-300 ring-sky-500/25',             accent: 'border-sky-400' },
-  pattern:  { icon: '🔷', label: 'Pattern',  badge: 'bg-indigo-500/10 text-indigo-300 ring-indigo-500/25',    accent: 'border-indigo-400' },
-  decision: { icon: '⚖️', label: 'Decision', badge: 'bg-amber-500/10 text-amber-300 ring-amber-500/25',       accent: 'border-amber-400' },
-  lesson:   { icon: '📖', label: 'Lesson',   badge: 'bg-emerald-500/10 text-emerald-300 ring-emerald-500/25', accent: 'border-emerald-400' },
-  session:  { icon: '🎯', label: 'Session',  badge: 'bg-white/5 text-zinc-300 ring-white/10',                 accent: 'border-zinc-500' },
+  guide:    { icon: '📘', label: 'Guide',    badge: 'bg-sky-500/10 text-sky-700 ring-sky-500/25',             accent: 'border-sky-400' },
+  pattern:  { icon: '🔷', label: 'Pattern',  badge: 'bg-indigo-500/10 text-indigo-700 ring-indigo-500/25',    accent: 'border-indigo-400' },
+  decision: { icon: '⚖️', label: 'Decision', badge: 'bg-amber-500/10 text-amber-700 ring-amber-500/25',       accent: 'border-amber-400' },
+  lesson:   { icon: '📖', label: 'Lesson',   badge: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/25', accent: 'border-emerald-400' },
+  session:  { icon: '🎯', label: 'Session',  badge: 'bg-zinc-100 text-zinc-700 ring-zinc-200',                 accent: 'border-zinc-500' },
 };
 
 const TYPE_ORDER: KBDocument['type'][] = ['guide', 'pattern', 'decision', 'lesson', 'session'];
@@ -132,7 +132,7 @@ function Tags({ tags }: { tags: string[] }) {
   return (
     <div className="flex flex-wrap gap-1">
       {tags.map(tag => (
-        <span key={tag} className="rounded-full bg-indigo-500/10 px-2 py-0.5 text-[10px] text-indigo-300">#{tag}</span>
+        <span key={tag} className="rounded-full bg-indigo-500/10 px-2 py-0.5 text-[10px] text-indigo-700">#{tag}</span>
       ))}
     </div>
   );
@@ -145,18 +145,18 @@ function DocCard({ doc, onClick }: { doc: KBDocument; onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex cursor-pointer flex-col rounded-2xl border border-white/[0.07] bg-zinc-900/60 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-indigo-500/40 hover:bg-zinc-900 hover:shadow-lg hover:shadow-indigo-500/5"
+      className="group flex cursor-pointer flex-col rounded-2xl border border-zinc-200 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-indigo-500/40 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5"
     >
       <div className="mb-3 flex items-center justify-between">
         <TypeBadge type={doc.type} />
         {updated && <span className="text-[11px] text-zinc-500">{updated}</span>}
       </div>
-      <div className="mb-1.5 text-sm font-semibold leading-snug text-zinc-100 group-hover:text-white">{doc.title}</div>
-      <p className="line-clamp-3 text-xs leading-relaxed text-zinc-400">{doc.preview}</p>
+      <div className="mb-1.5 text-sm font-semibold leading-snug text-zinc-900 group-hover:text-zinc-900">{doc.title}</div>
+      <p className="line-clamp-3 text-xs leading-relaxed text-zinc-600">{doc.preview}</p>
       {doc.tags && doc.tags.length > 0 && <div className="mt-3"><Tags tags={doc.tags} /></div>}
       {doc.path && (
         <div className="mt-auto pt-3">
-          <div className="truncate border-t border-white/[0.05] pt-2.5 font-mono text-[10px] text-zinc-500">📁 {doc.path}</div>
+          <div className="truncate border-t border-zinc-100 pt-2.5 font-mono text-[10px] text-zinc-500">📁 {doc.path}</div>
         </div>
       )}
     </button>
@@ -170,12 +170,12 @@ function DocModal({ doc, onClose }: { doc: KBDocument; onClose: () => void }) {
 
   return (
     <Modal onClose={onClose} className="max-w-2xl">
-      <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
+      <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4">
         <TypeBadge type={doc.type} />
         <CloseButton onClick={onClose} />
       </div>
       <div className="overflow-y-auto px-6 py-5 scrollbar-thin">
-        <h2 className="text-xl font-bold leading-snug text-white">{doc.title}</h2>
+        <h2 className="text-xl font-bold leading-snug text-zinc-900">{doc.title}</h2>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
           {doc.project && <span>🏢 {doc.project}</span>}
           {doc.scope && <span>🌐 {doc.scope}</span>}
@@ -183,15 +183,15 @@ function DocModal({ doc, onClose }: { doc: KBDocument; onClose: () => void }) {
         </div>
         {doc.tags && <div className="mt-4"><Tags tags={doc.tags} /></div>}
 
-        <div className={cn('mt-5 rounded-xl border-l-2 bg-white/[0.03] p-4 text-sm leading-7 text-zinc-300', cfg.accent)}>
+        <div className={cn('mt-5 rounded-xl border-l-2 bg-zinc-50 p-4 text-sm leading-7 text-zinc-700', cfg.accent)}>
           {doc.preview}
-          <p className="mt-4 border-t border-white/[0.05] pt-3 text-xs italic text-zinc-500">
+          <p className="mt-4 border-t border-zinc-100 pt-3 text-xs italic text-zinc-500">
             💡 Nội dung đầy đủ sẽ được load từ filesystem sau khi kết nối với team-ai-knowledge.
           </p>
         </div>
 
         {doc.path && (
-          <div className="mt-3 rounded-lg bg-white/[0.03] px-3 py-2 font-mono text-[11px] text-zinc-500">📁 {doc.path}</div>
+          <div className="mt-3 rounded-lg bg-zinc-50 px-3 py-2 font-mono text-[11px] text-zinc-500">📁 {doc.path}</div>
         )}
       </div>
     </Modal>
@@ -246,8 +246,8 @@ export function KnowledgePage({ useApi: _useApi }: { useApi?: boolean } = {}) {
             className={cn(
               'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
               typeFilter === tab.key
-                ? 'border-indigo-500/50 bg-indigo-500/15 text-indigo-200'
-                : 'border-white/10 bg-white/[0.03] text-zinc-400 hover:text-zinc-200',
+                ? 'border-indigo-500/50 bg-indigo-500/15 text-indigo-700'
+                : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:text-zinc-800',
             )}
           >
             {tab.icon} {tab.label}
@@ -264,10 +264,10 @@ export function KnowledgePage({ useApi: _useApi }: { useApi?: boolean } = {}) {
           .filter(g => g.docs.length > 0)
           .map(({ type, docs }) => (
             <section key={type} className="mb-8">
-              <div className="mb-3 flex items-center gap-2 border-b border-white/[0.06] pb-2">
+              <div className="mb-3 flex items-center gap-2 border-b border-zinc-200 pb-2">
                 <span>{TYPE_CONFIG[type].icon}</span>
-                <h2 className="text-sm font-semibold text-zinc-100">{TYPE_CONFIG[type].label}s</h2>
-                <span className="rounded-full bg-white/5 px-2 text-[11px] tabular-nums text-zinc-500">{docs.length}</span>
+                <h2 className="text-sm font-semibold text-zinc-900">{TYPE_CONFIG[type].label}s</h2>
+                <span className="rounded-full bg-zinc-100 px-2 text-[11px] tabular-nums text-zinc-500">{docs.length}</span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {docs.map(doc => <DocCard key={doc.id} doc={doc} onClick={() => setSelectedDoc(doc)} />)}

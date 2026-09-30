@@ -6,9 +6,14 @@ import { kbSource } from './kb-source.js';
 import { parseFrontmatter, type Frontmatter } from './kb-reader.js';
 import {
   ALL_ARTIFACTS,
+  EXTRA_ARTIFACTS,
   calculateCompliance,
+  normalizeApprovals,
+  normalizeRejections,
+  normalizeSchema,
   normalizeStage,
-  parseTaskProgress,
+  parseRequirements,
+  parseTasks,
   parseTestVerdict,
   type ArtifactStatus,
   type ChangeWithCompliance,
@@ -40,18 +45,19 @@ export async function buildChange(
 ): Promise<ChangeWithCompliance> {
   const base = `${CHANGES_DIR}/${name}`;
 
-  const [sessionContent, statusContent, tasksContent, testReportContent] = await Promise.all([
+  const [sessionContent, statusContent, tasksContent, testReportContent, specsContent] = await Promise.all([
     kbSource.read(`${base}/.session.md`),
     kbSource.read(`${base}/.status`),
     kbSource.read(`${base}/tasks.md`),
     kbSource.read(`${base}/test-report.md`),
+    kbSource.read(`${base}/specs.md`),
   ]);
   const frontmatter: Frontmatter = sessionContent ? parseFrontmatter(sessionContent).frontmatter : {};
 
   // Commit lookups cost one API call per file on GitHub, so only do them for the detail view there
   const withGitInfo = detail || kbSource.mode === 'local';
 
-  const artifactList = await Promise.all(ALL_ARTIFACTS.map(async (file): Promise<ArtifactStatus> => {
+  const artifactStatus = async (file: string): Promise<ArtifactStatus> => {
     const rel = `${base}/${file}`;
     const exists = await kbSource.exists(rel);
     if (!exists) return { file, exists };
@@ -67,18 +73,34 @@ export async function buildChange(
       updatedAt: gitInfo?.date ?? await kbSource.mtime(rel),
       preview: content?.slice(0, 500),
     };
-  }));
+  };
 
+  const [artifactList, extraList] = await Promise.all([
+    Promise.all(ALL_ARTIFACTS.map(artifactStatus)),
+    Promise.all(EXTRA_ARTIFACTS.map(async file =>
+      (await kbSource.exists(`${base}/${file}`)) ? artifactStatus(file) : null)),
+  ]);
+
+  const taskItems = parseTasks(tasksContent);
+  const started = frontmatter.started_at as unknown;
   const change: OpenSpecChange = {
     name,
     assignee: frontmatter.assignee,
     stage: normalizeStage(statusContent),
     mode: frontmatter.mode ?? 'full',
-    startedAt: frontmatter.started_at,
+    schema: normalizeSchema(frontmatter.schema),
+    capability: typeof frontmatter.capability === 'string' && frontmatter.capability ? frontmatter.capability : name,
+    startedAt: started instanceof Date ? started.toISOString() : frontmatter.started_at,
     project: frontmatter.project ?? 'MT-GRMS',
     artifacts: Object.fromEntries(artifactList.map(a => [a.file, a])),
-    tasks: parseTaskProgress(tasksContent),
+    extraArtifacts: extraList.filter((a): a is ArtifactStatus => a !== null),
+    tasks: taskItems && { done: taskItems.filter(t => t.done).length, total: taskItems.length },
+    taskItems,
+    requirements: parseRequirements(specsContent),
     testVerdict: parseTestVerdict(testReportContent),
+    gate: frontmatter.gate === true,
+    approvals: normalizeApprovals(frontmatter.approvals),
+    rejections: normalizeRejections(frontmatter.rejections),
   };
 
   return { ...change, compliance: calculateCompliance(change) };

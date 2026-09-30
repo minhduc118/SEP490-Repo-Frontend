@@ -1,24 +1,27 @@
 // ─── TeamSpec Monitor — Root Component ───────────────────────────────────────
-import { useEffect, useState, type ReactNode } from 'react';
-import { TeamSpecLayout } from './components/Layout';
+// Mounted at /teamspec/* — every page has its own URL so links can be shared and survive F5.
+import { useEffect, type ReactNode } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { TeamSpecLayout, type Page } from './components/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { ChangesListPage } from './pages/ChangesListPage';
 import { ChangeDetailPage } from './pages/ChangeDetailPage';
+import { TasksPage } from './pages/TasksPage';
+import { SpecsPage } from './pages/SpecsPage';
 import { TeamPage } from './pages/TeamPage';
 import { KnowledgePage } from './pages/KnowledgePage';
 import { TeamSpecLoginPage } from './pages/LoginPage';
 import { ApiError, useApiHealth, useMe } from './lib/api';
 import { useAuthStore } from './lib/authStore';
+import { BASE, teamspecPath } from './lib/routes';
 import { cn } from './lib/styles';
-
-type Page = 'dashboard' | 'changes' | 'team' | 'knowledge';
 
 function Root({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-screen bg-zinc-950 font-sans text-zinc-100 antialiased selection:bg-indigo-500/30">
+    <div className="relative min-h-screen bg-white font-sans text-zinc-900 antialiased selection:bg-indigo-500/30">
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-x-0 top-0 h-[480px] bg-[radial-gradient(ellipse_60%_60%_at_50%_-10%,rgba(99,102,241,0.18),transparent)]"
+        className="pointer-events-none fixed inset-x-0 top-0 h-[480px] bg-[radial-gradient(ellipse_60%_60%_at_50%_-10%,rgba(99,102,241,0.07),transparent)]"
       />
       <div className="relative">{children}</div>
     </div>
@@ -34,8 +37,8 @@ function ServerStatusBadge({ isOnline, sourceLabel }: { isOnline: boolean | unde
       className={cn(
         'flex items-center gap-2 rounded-full border px-2 py-2 text-[11px] font-semibold md:px-3 md:py-1.5',
         isOnline
-          ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
-          : 'border-rose-500/25 bg-rose-500/10 text-rose-300',
+          ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700'
+          : 'border-rose-500/25 bg-rose-500/10 text-rose-700',
       )}
     >
       <span className="relative flex size-2">
@@ -49,10 +52,26 @@ function ServerStatusBadge({ isOnline, sourceLabel }: { isOnline: boolean | unde
   );
 }
 
+function pageFromPath(pathname: string): Page {
+  const seg = pathname.slice(BASE.length).split('/').filter(Boolean)[0];
+  return (['changes', 'tasks', 'specs', 'team', 'knowledge'] as const).find(p => p === seg) ?? 'dashboard';
+}
+
+function ChangeDetailRoute({ useApi }: { useApi: boolean }) {
+  const { name = '' } = useParams();
+  const navigate = useNavigate();
+  const goBack = () => {
+    // idx > 0 means there is an in-app page to return to; otherwise land on the list
+    if ((window.history.state as { idx?: number } | null)?.idx) navigate(-1);
+    else navigate(`${BASE}/changes`);
+  };
+  return <ChangeDetailPage changeName={name} onBack={goBack} useApi={useApi} />;
+}
+
 export function TeamSpecApp() {
   const { isAuthenticated, login, logout } = useAuthStore();
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
-  const [selectedChange, setSelectedChange] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Health check — detect if Express server is running
   const { data: health, isError: serverOffline } = useApiHealth();
@@ -66,59 +85,37 @@ export function TeamSpecApp() {
     else if (meError instanceof ApiError && meError.status === 401) logout();
   }, [isServerOnline, me, meError, login, logout]);
 
-  function handleSelectChange(name: string) {
-    setSelectedChange(name);
-    setCurrentPage('changes');
-  }
-
-  function handleNavigate(page: Page) {
-    setCurrentPage(page);
-    if (page !== 'changes') setSelectedChange(null);
-  }
-
-  function renderPage() {
-    // Change detail — hiển thị khi chọn 1 change từ bất kỳ trang nào
-    if (selectedChange) {
-      return (
-        <ChangeDetailPage
-          changeName={selectedChange}
-          onBack={() => setSelectedChange(null)}
-          useApi={isServerOnline}
-        />
-      );
-    }
-
-    switch (currentPage) {
-      case 'dashboard':
-        return <DashboardPage onSelectChange={handleSelectChange} useApi={isServerOnline} />;
-      case 'changes':
-        return <ChangesListPage onSelectChange={handleSelectChange} useApi={isServerOnline} />;
-      case 'team':
-        return <TeamPage onSelectChange={handleSelectChange} useApi={isServerOnline} />;
-      case 'knowledge':
-        return <KnowledgePage useApi={isServerOnline} />;
-      default:
-        return <DashboardPage onSelectChange={handleSelectChange} useApi={isServerOnline} />;
-    }
-  }
+  const openChange = (name: string) => navigate(teamspecPath.change(name));
+  const openSpec = (capability: string) => navigate(teamspecPath.spec(capability));
 
   if (!isAuthenticated) {
     if (isServerOnline && meLoading) return <Root>{null}</Root>;
     return (
       <Root>
-        <TeamSpecLoginPage onSuccess={() => setCurrentPage('dashboard')} serverOnline={isServerOnline} />
+        <TeamSpecLoginPage onSuccess={() => navigate(location.pathname + location.search.replace(/[?&]auth_error=[^&]*/g, ''))} serverOnline={isServerOnline} />
       </Root>
     );
   }
 
+  const useApi = isServerOnline;
   return (
     <Root>
       <TeamSpecLayout
-        currentPage={currentPage}
-        onNavigate={handleNavigate}
+        currentPage={pageFromPath(location.pathname)}
+        onNavigate={page => navigate(page === 'dashboard' ? BASE : `${BASE}/${page}`)}
         status={<ServerStatusBadge isOnline={isServerOnline} sourceLabel={health?.source?.label} />}
       >
-        {renderPage()}
+        <Routes>
+          <Route index element={<DashboardPage onSelectChange={openChange} useApi={useApi} />} />
+          <Route path="changes" element={<ChangesListPage onSelectChange={openChange} useApi={useApi} />} />
+          <Route path="changes/:name" element={<ChangeDetailRoute useApi={useApi} />} />
+          <Route path="tasks" element={<TasksPage onSelectChange={openChange} useApi={useApi} />} />
+          <Route path="specs" element={<SpecsPage onSelectSpec={openSpec} onSelectChange={openChange} useApi={useApi} />} />
+          <Route path="specs/:capability" element={<SpecsPage onSelectSpec={openSpec} onSelectChange={openChange} useApi={useApi} />} />
+          <Route path="team" element={<TeamPage onSelectChange={openChange} useApi={useApi} />} />
+          <Route path="knowledge" element={<KnowledgePage useApi={useApi} />} />
+          <Route path="*" element={<Navigate to={BASE} replace />} />
+        </Routes>
       </TeamSpecLayout>
     </Root>
   );

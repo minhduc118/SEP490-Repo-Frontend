@@ -55,14 +55,14 @@ export function TeamPage({ onSelectChange }: Props) {
                 const critical = m.violations.filter(v => v.severity === 'critical').length;
                 const warn = m.violations.length - critical;
                 return (
-                  <tr key={m.login} className="transition-colors hover:bg-white/[0.02]">
+                  <tr key={m.login} className="transition-colors hover:bg-zinc-50">
                     <td className={table.td}>
                       <div className="flex items-center gap-2.5">
                         <Avatar login={m.login} />
-                        <span className="font-semibold text-zinc-100">@{m.login}</span>
+                        <span className="font-semibold text-zinc-900">@{m.login}</span>
                       </div>
                     </td>
-                    <td className={cn(table.td, 'tabular-nums text-zinc-300')}>{m.changesCount}</td>
+                    <td className={cn(table.td, 'tabular-nums text-zinc-700')}>{m.changesCount}</td>
                     <td className={table.td}><ScoreBadge score={m.avgScore} /></td>
                     <td className={cn(table.td, 'min-w-[140px]')}><ProgressBar value={m.avgScore} /></td>
                     <td className={table.td}>
@@ -95,10 +95,10 @@ export function TeamPage({ onSelectChange }: Props) {
               <div key={m.login}>
                 <div className="mb-2 flex items-center gap-2.5">
                   <Avatar login={m.login} />
-                  <span className="text-sm font-semibold text-zinc-100">@{m.login}</span>
+                  <span className="text-sm font-semibold text-zinc-900">@{m.login}</span>
                   <ScoreBadge score={m.avgScore} />
                 </div>
-                <ul className="ml-3.5 border-l border-white/10 pl-5">
+                <ul className="ml-3.5 border-l border-zinc-200 pl-5">
                   {m.changes.map(cname => {
                     const change = MOCK_CHANGES.find(c => c.name === cname);
                     if (!change) return null;
@@ -107,9 +107,9 @@ export function TeamPage({ onSelectChange }: Props) {
                         <button
                           type="button"
                           onClick={() => onSelectChange(cname)}
-                          className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition-colors hover:bg-white/5"
+                          className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition-colors hover:bg-zinc-100"
                         >
-                          <span className="text-indigo-300">{cname}</span>
+                          <span className="text-indigo-700">{cname}</span>
                           <ScoreBadge score={change.compliance.score} />
                         </button>
                       </li>
@@ -125,15 +125,15 @@ export function TeamPage({ onSelectChange }: Props) {
           <Card>
             <CardTitle>🔥 Vi phạm phổ biến nhất</CardTitle>
             {commonViolations.length === 0 ? (
-              <div className="text-sm text-emerald-300">✓ Không có vi phạm nào!</div>
+              <div className="text-sm text-emerald-700">✓ Không có vi phạm nào!</div>
             ) : (
               <ul className="flex flex-col gap-2">
                 {commonViolations.map(([msg, count]) => (
-                  <li key={msg} className="flex items-start gap-3 rounded-xl bg-white/[0.02] px-3 py-2.5">
-                    <span className="shrink-0 rounded-full bg-indigo-500/15 px-2 py-0.5 text-[11px] font-bold tabular-nums text-indigo-300">
+                  <li key={msg} className="flex items-start gap-3 rounded-xl bg-zinc-50 px-3 py-2.5">
+                    <span className="shrink-0 rounded-full bg-indigo-500/15 px-2 py-0.5 text-[11px] font-bold tabular-nums text-indigo-700">
                       ×{count}
                     </span>
-                    <span className="text-xs leading-relaxed text-zinc-300">{msg}</span>
+                    <span className="text-xs leading-relaxed text-zinc-700">{msg}</span>
                   </li>
                 ))}
               </ul>
@@ -142,11 +142,11 @@ export function TeamPage({ onSelectChange }: Props) {
 
           <Card>
             <CardTitle>📊 Thống kê</CardTitle>
-            <dl className="divide-y divide-white/[0.05]">
+            <dl className="divide-y divide-zinc-100">
               {teamStats.map(stat => (
                 <div key={stat.label} className="flex justify-between py-2 text-sm">
-                  <dt className="text-zinc-400">{stat.label}</dt>
-                  <dd className="font-semibold tabular-nums text-zinc-100">{stat.value}</dd>
+                  <dt className="text-zinc-600">{stat.label}</dt>
+                  <dd className="font-semibold tabular-nums text-zinc-900">{stat.value}</dd>
                 </div>
               ))}
             </dl>

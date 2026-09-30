@@ -19,22 +19,22 @@ interface Props {
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 const STAT_TONES: Record<Tone, string> = {
-  accent: 'from-indigo-500/20 text-indigo-300',
-  pass: 'from-emerald-500/20 text-emerald-300',
-  fail: 'from-rose-500/20 text-rose-300',
-  warn: 'from-amber-500/20 text-amber-300',
-  gray: 'from-white/10 text-zinc-300',
+  accent: 'from-indigo-500/20 text-indigo-700',
+  pass: 'from-emerald-500/20 text-emerald-700',
+  fail: 'from-rose-500/20 text-rose-700',
+  warn: 'from-amber-500/20 text-amber-700',
+  gray: 'from-zinc-300/40 text-zinc-700',
 };
 
 function StatCard({ icon, value, label, tone }: { icon: string; value: string | number; label: string; tone: Tone }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-zinc-900/60 p-5">
+    <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5">
       <div className={cn('pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-gradient-to-br to-transparent blur-2xl', STAT_TONES[tone])} />
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-400">{label}</span>
-        <span className={cn('grid size-8 place-items-center rounded-lg bg-white/5 text-base', STAT_TONES[tone])}>{icon}</span>
+        <span className="text-xs font-medium text-zinc-600">{label}</span>
+        <span className={cn('grid size-8 place-items-center rounded-lg bg-zinc-100 text-base', STAT_TONES[tone])}>{icon}</span>
       </div>
-      <div className="mt-3 text-3xl font-bold tabular-nums tracking-tight text-white">{value}</div>
+      <div className="mt-3 text-3xl font-bold tabular-nums tracking-tight text-zinc-900">{value}</div>
     </div>
   );
 }
@@ -48,7 +48,7 @@ function ChangeRow({ change, onClick }: { change: ChangeWithCompliance; onClick:
         <div className="flex items-center gap-2.5">
           {blocked && <BlockedDot />}
           <div>
-            <div className="font-semibold text-zinc-100">{change.name}</div>
+            <div className="font-semibold text-zinc-900">{change.name}</div>
             <div className="mt-0.5 text-[11px] text-zinc-500">{change.project}</div>
           </div>
         </div>
@@ -98,16 +98,16 @@ export function DashboardPage({ onSelectChange, useApi = false }: Props) {
       />
 
       {blockedCount > 0 && (
-        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-rose-500/30 bg-gradient-to-r from-rose-500/15 to-rose-500/5 px-4 py-3 text-sm text-rose-100">
+        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-rose-500/30 bg-gradient-to-r from-rose-50 to-white px-4 py-3 text-sm text-rose-800">
           <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-rose-500/20">🚨</span>
           <div>
             <strong className="font-semibold">{blockedCount} change{blockedCount > 1 ? 's' : ''} bị BLOCKED</strong>
-            <span className="text-rose-200/80"> — có bước bị skip. Cần xử lý ngay!</span>
+            <span className="text-rose-700/80"> — có bước bị skip. Cần xử lý ngay!</span>
           </div>
           <button
             type="button"
             onClick={() => setScoreFilter('blocked')}
-            className="ml-auto shrink-0 cursor-pointer rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-medium text-rose-100 hover:bg-rose-500/30"
+            className="ml-auto shrink-0 cursor-pointer rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-500"
           >
             Xem ngay
           </button>
@@ -117,7 +117,7 @@ export function DashboardPage({ onSelectChange, useApi = false }: Props) {
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {isLoading && useApi ? (
           Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="h-[108px] animate-pulse rounded-2xl border border-white/[0.07] bg-zinc-900/60" />
+            <div key={i} className="h-[108px] animate-pulse rounded-2xl border border-zinc-200 bg-white" />
           ))
         ) : (
           <>
@@ -132,7 +132,7 @@ export function DashboardPage({ onSelectChange, useApi = false }: Props) {
       <ComplianceChart changes={filtered.length > 0 ? filtered : allChanges} />
 
       <Card>
-        <CardTitle extra={hasFilters && <span className="text-indigo-300">Đang lọc: {filtered.length} kết quả</span>}>
+        <CardTitle extra={hasFilters && <span className="text-indigo-700">Đang lọc: {filtered.length} kết quả</span>}>
           Danh sách Changes
         </CardTitle>
 

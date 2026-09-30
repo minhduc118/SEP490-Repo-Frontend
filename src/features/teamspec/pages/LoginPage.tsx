@@ -99,21 +99,23 @@ export function TeamSpecLoginPage({ onSuccess, serverOnline }: TeamSpecLoginPage
   }
 
   const githubReady = serverOnline && !!config?.github;
+  // Offline mode keeps the demo accounts; online the server decides (off in production)
+  const passwordEnabled = !serverOnline || config?.password !== false;
 
   return (
     <div className="relative grid min-h-screen place-items-center overflow-hidden px-4 py-10">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
       />
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="relative w-full max-w-sm animate-pop-in rounded-3xl border border-white/10 bg-zinc-900/70 p-7 shadow-2xl shadow-black/50 backdrop-blur-xl"
+        className="relative w-full max-w-sm animate-pop-in rounded-3xl border border-zinc-200 bg-white p-7 shadow-2xl shadow-zinc-900/10 backdrop-blur-xl"
       >
         <div className="mb-7 flex flex-col items-center text-center">
           <Logo size="lg" />
-          <h1 className="mt-4 text-xl font-bold tracking-tight text-white">TeamSpec Monitor</h1>
+          <h1 className="mt-4 text-xl font-bold tracking-tight text-zinc-900">TeamSpec Monitor</h1>
           <p className="mt-1 text-xs text-zinc-500">MT-GRMS · SEP490 Group 84</p>
         </div>
 
@@ -128,23 +130,24 @@ export function TeamSpecLoginPage({ onSuccess, serverOnline }: TeamSpecLoginPage
           className={cn(
             'flex h-11 w-full items-center justify-center gap-2.5 rounded-xl text-sm font-semibold transition-all',
             githubReady
-              ? 'bg-white text-zinc-900 shadow-lg shadow-white/10 hover:bg-zinc-200'
-              : 'cursor-not-allowed bg-white/10 text-zinc-500',
+              ? 'bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 hover:bg-zinc-800'
+              : 'cursor-not-allowed bg-zinc-100 text-zinc-400',
           )}
         >
           <GithubIcon /> Sign in with GitHub
         </a>
         {githubReady && config?.repo && (
           <p className="mt-2 text-center text-[11px] text-zinc-500">
-            Dành cho collaborator của <code className="font-mono text-zinc-400">{config.repo}</code>
+            Dành cho collaborator của <code className="font-mono text-zinc-600">{config.repo}</code>
           </p>
         )}
 
+        {passwordEnabled && <>
         <Divider>hoặc tài khoản nhóm</Divider>
 
         <div className="flex flex-col gap-3">
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-zinc-400">Username</span>
+            <span className="text-xs font-medium text-zinc-600">Username</span>
             <input
               id="ts-login-username"
               className={inputClass}
@@ -155,7 +158,7 @@ export function TeamSpecLoginPage({ onSuccess, serverOnline }: TeamSpecLoginPage
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-zinc-400">Password</span>
+            <span className="text-xs font-medium text-zinc-600">Password</span>
             <input
               id="ts-login-password"
               className={inputClass}
@@ -168,7 +171,7 @@ export function TeamSpecLoginPage({ onSuccess, serverOnline }: TeamSpecLoginPage
           </label>
 
           {error && (
-            <div role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+            <div role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-700">
               ⚠ {error}
             </div>
           )}
@@ -189,14 +192,15 @@ export function TeamSpecLoginPage({ onSuccess, serverOnline }: TeamSpecLoginPage
               className={cn(
                 'cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                 username === m.login
-                  ? 'border-indigo-500/60 bg-indigo-500/20 text-indigo-200'
-                  : 'border-white/10 bg-white/[0.03] text-zinc-400 hover:border-white/20 hover:text-zinc-200',
+                  ? 'border-indigo-500/60 bg-indigo-500/20 text-indigo-700'
+                  : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:border-zinc-300 hover:text-zinc-800',
               )}
             >
               {m.login}
             </button>
           ))}
         </div>
+        </>}
       </form>
     </div>
   );
@@ -204,10 +208,10 @@ export function TeamSpecLoginPage({ onSuccess, serverOnline }: TeamSpecLoginPage
 
 function Divider({ children }: { children: string }) {
   return (
-    <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-wider text-zinc-600">
-      <span className="h-px flex-1 bg-white/10" />
+    <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-wider text-zinc-400">
+      <span className="h-px flex-1 bg-zinc-200" />
       {children}
-      <span className="h-px flex-1 bg-white/10" />
+      <span className="h-px flex-1 bg-zinc-200" />
     </div>
   );
 }

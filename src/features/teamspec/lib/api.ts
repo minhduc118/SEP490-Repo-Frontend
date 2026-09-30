@@ -5,6 +5,8 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ChangeWithCompliance, DashboardStats, TeamMember } from '../types';
 import type { AuthUser } from './teamMembers';
+import type { ActivityItem } from './activity';
+import type { SpecDetail, SpecSummary } from './specs';
 
 export type {
   ArtifactStatus, ChangeMode, ChangeWithCompliance, ComplianceResult,
@@ -175,6 +177,45 @@ export function useStats() {
     queryKey: ['stats'],
     queryFn: fetchStats,
     staleTime: 30_000,
+  });
+}
+
+async function getJson<T>(url: string): Promise<T> {
+  const res = await fetch(url);
+  if (!res.ok) throw new ApiError(res.status, `API error: ${res.status}`);
+  return res.json();
+}
+
+/** Timeline of one change */
+export function useActivity(changeName: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['activity', changeName],
+    queryFn: () => getJson<{ items: ActivityItem[]; source: 'git' | 'session' }>(
+      `${API_BASE}/changes/${encodeURIComponent(changeName)}/activity`,
+    ),
+    staleTime: 30_000,
+    enabled: enabled && !!changeName,
+  });
+}
+
+/** Capabilities in openspec/specs */
+export function useSpecs(enabled: boolean) {
+  return useQuery({
+    queryKey: ['specs'],
+    queryFn: () => getJson<{ specs: SpecSummary[] }>(`${API_BASE}/specs`),
+    staleTime: 30_000,
+    enabled,
+    select: data => data.specs,
+  });
+}
+
+export function useSpec(capability: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['spec', capability],
+    queryFn: () => getJson<SpecDetail>(`${API_BASE}/specs/${encodeURIComponent(capability!)}`),
+    staleTime: 30_000,
+    enabled: enabled && !!capability,
+    retry: false,
   });
 }
 

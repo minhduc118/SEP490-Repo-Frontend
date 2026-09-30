@@ -42,7 +42,7 @@ export function ComplianceChart({ changes }: Props) {
 
   return (
     <Card className="mb-6">
-      <CardTitle extra={<>Avg <span className="font-semibold text-indigo-300">{avg}%</span></>}>
+      <CardTitle extra={<>Avg <span className="font-semibold text-indigo-700">{avg}%</span></>}>
         📊 Compliance Score
       </CardTitle>
 
@@ -63,7 +63,7 @@ export function ComplianceChart({ changes }: Props) {
           const y = TOP_PAD + CHART_INNER_H - (val / 100) * CHART_INNER_H;
           return (
             <g key={val}>
-              <line x1={AXIS_W} y1={y} x2={CHART_W} y2={y} stroke="rgba(255,255,255,0.06)" strokeDasharray={val ? '4 4' : undefined} />
+              <line x1={AXIS_W} y1={y} x2={CHART_W} y2={y} stroke="rgba(0,0,0,0.08)" strokeDasharray={val ? '4 4' : undefined} />
               <text x={AXIS_W - 8} y={y} fontSize="11" fill="#71717a" textAnchor="end" dominantBaseline="middle">
                 {val}
               </text>
@@ -80,7 +80,7 @@ export function ComplianceChart({ changes }: Props) {
 
           return (
             <g key={change.name}>
-              <rect x={x} y={TOP_PAD} width={barW} height={CHART_INNER_H} fill="rgba(255,255,255,0.025)" rx="8" />
+              <rect x={x} y={TOP_PAD} width={barW} height={CHART_INNER_H} fill="rgba(0,0,0,0.035)" rx="8" />
               <rect x={x} y={y} width={barW} height={barH} fill={`url(#bar-${change.name})`} rx="8">
                 <title>{change.name}: {change.compliance.score}%</title>
               </rect>
@@ -93,7 +93,7 @@ export function ComplianceChart({ changes }: Props) {
               <text x={cx} y={y - 8} fontSize="13" fill={color} textAnchor="middle" fontWeight="700">
                 {change.compliance.score}%
               </text>
-              <text x={cx} y={CHART_H - 8} fontSize="11" fill="#a1a1aa" textAnchor="middle">
+              <text x={cx} y={CHART_H - 8} fontSize="11" fill="#52525b" textAnchor="middle">
                 {truncate(change.name, Math.max(8, Math.floor(slotW / 7)))}
               </text>
             </g>
